@@ -23,6 +23,23 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Mostrar el SQL solo en local (SQL_ECHO)
+
+**Qué:**
+- Nueva variable opcional `SQL_ECHO`: con `SQL_ECHO=1` el engine muestra el SQL que ejecuta. Sin definir, no lo muestra.
+- En el `.env` local está a `1`. En producción no se define.
+
+**Por qué:**
+- En producción, `echo=True` escribiría en los registros cada consulta, incluidos los títulos de las tareas, que son datos personales.
+- Es opcional (`os.environ.get`) y no obligatoria como `API_KEY` o `DATABASE_URL`: si falta, el resultado es el valor seguro (no mostrar nada), así que no hace falta impedir que arranque la API.
+
+**Alternativas descartadas:**
+- Activar el echo solo si la base de datos es SQLite: funciona, pero mezcla dos cosas distintas (qué base de datos se usa y si se quiere ver el SQL).
+- Quitar el echo del todo: se perdería una herramienta útil para aprender qué hace el ORM.
+
+**Pendiente / siguiente paso:**
+- Desplegar con `fastapi deploy` y configurar `API_KEY` (nueva, distinta de la local) y `DATABASE_URL` como secretos en FastAPI Cloud.
+
 ## 2026-10-26 — Fase 2: elegir dónde desplegar y preparar la base de datos
 
 **Qué:**

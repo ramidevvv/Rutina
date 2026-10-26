@@ -14,6 +14,9 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 load_dotenv()
 API_KEY = os.environ["API_KEY"]
 DATABASE_URL = os.environ["DATABASE_URL"]
+# Opcional: si no está definida, no se muestra el SQL (así los títulos de las
+# tareas no acaban en los registros de producción)
+SQL_ECHO = os.environ.get("SQL_ECHO") == "1"
 
 
 # Datos que envía el cliente al crear una tarea
@@ -36,8 +39,8 @@ connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-# Conexión a la base de datos. echo=True muestra en la terminal el SQL que se ejecuta.
-engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
+# Conexión a la base de datos. Con echo activado se muestra en la terminal el SQL que se ejecuta.
+engine = create_engine(DATABASE_URL, echo=SQL_ECHO, connect_args=connect_args)
 
 
 # Abre una sesión por petición y la cierra al terminar, aunque haya un error
