@@ -1,9 +1,18 @@
+import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
+from fastapi.security import APIKeyHeader
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+# Carga las variables del archivo .env. Si falta API_KEY, la API no arranca:
+# mejor fallar al inicio que funcionar sin protección.
+load_dotenv()
+API_KEY = os.environ["API_KEY"]
 
 
 # Datos que envía el cliente al crear una tarea
@@ -39,6 +48,17 @@ def get_session():
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
+# Lee la cabecera X-API-Key. auto_error=False para devolver nuestro propio 401
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+# Rechaza la petición si la clave falta o no coincide con la de .env.
+# compare_digest compara en tiempo constante para no dar pistas sobre la clave.
+def verify_api_key(api_key: Annotated[str | None, Security(api_key_header)]):
+    if api_key is None or not secrets.compare_digest(api_key, API_KEY):
+        raise HTTPException(status_code=401, detail="Clave API no válida o ausente")
+
+
 # Se ejecuta al arrancar la API: crea las tablas que aún no existan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -56,8 +76,16 @@ def read_root():
     return {"message": "Hola desde Rutina"}
 
 
+# Todos los endpoints de /tasks exigen la clave API
+tasks_router = APIRouter(
+    prefix="/tasks",
+    tags=["tasks"],
+    dependencies=[Depends(verify_api_key)],
+)
+
+
 # Crea una tarea nueva; la base de datos asigna el id
-@app.post("/tasks", status_code=201)
+@tasks_router.post("", status_code=201)
 def create_task(task_in: TaskCreate, session: SessionDep) -> Task:
     task = Task.model_validate(task_in)
     session.add(task)
@@ -67,6 +95,9 @@ def create_task(task_in: TaskCreate, session: SessionDep) -> Task:
 
 
 # Lista todas las tareas
-@app.get("/tasks")
+@tasks_router.get("")
 def list_tasks(session: SessionDep) -> list[Task]:
     return session.exec(select(Task)).all()
+
+
+app.include_router(tasks_router)

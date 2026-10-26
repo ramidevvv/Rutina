@@ -23,6 +23,37 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Clave API en todos los endpoints de /tasks (Paso 5)
+
+**Qué:**
+- `.env` con `API_KEY`, una clave aleatoria de 43 caracteres generada con `secrets.token_urlsafe(32)`. No se sube a git.
+- `.env.example` (sí se sube): plantilla con las variables que necesita el proyecto.
+- `load_dotenv()` + `os.environ["API_KEY"]`: si falta la clave, la API no arranca.
+- Dependencia `verify_api_key`: lee la cabecera `X-API-Key` (`APIKeyHeader`) y responde `401` si falta o no coincide.
+- `APIRouter` con `prefix="/tasks"` y la dependencia aplicada a todo el grupo. `GET /` queda libre.
+- `claude.md` actualizado: la clave se pide también en los endpoints de lectura.
+
+**Por qué:**
+- Las tareas son personales: al desplegar, cualquiera que conozca la URL podría leerlas. Por eso se protege también `GET /tasks` y no solo lo que modifica datos (cambio respecto a la idea inicial).
+- El router aplica la clave en un único sitio: cualquier endpoint nuevo de `/tasks` queda protegido sin acordarse de hacerlo.
+- Fallar al arrancar si no hay clave es mejor que funcionar sin protección sin darse cuenta.
+- `secrets.compare_digest` en vez de `==`: tarda siempre lo mismo, así no se puede adivinar la clave midiendo tiempos.
+- La clave va en una cabecera y no en la URL, porque las URL quedan en historiales y registros de servidores.
+- `APIKeyHeader` añade el botón **Authorize** en `/docs`.
+
+**Alternativas descartadas:**
+- Comprobar la clave en cada endpoint por separado: es fácil olvidarla en uno nuevo.
+- Usuarios y contraseñas o tokens que caducan: demasiado para una app con un único usuario.
+- `pydantic-settings` para leer la configuración: más potente, pero para una sola variable basta con `python-dotenv`.
+
+**A tener en cuenta:**
+- Abrir `/tasks` en la barra del navegador da `401`, porque no se envía la cabecera. Es lo esperado: para probar, usar `/docs` (Authorize + Try it out) o `Invoke-RestMethod -Headers`.
+- En los clientes, usar `/tasks` sin barra final: `/tasks/` redirige con un `307`.
+- Al desplegar será obligatorio HTTPS: sin cifrado, la cabecera viaja en claro.
+
+**Pendiente / siguiente paso:**
+- Paso 6: servidor accesible desde la red local y primer atajo "Añadir tarea" en el iPhone.
+
 ## 2026-10-26 — Guardar las tareas en SQLite con SQLModel (Paso 4)
 
 **Qué:**

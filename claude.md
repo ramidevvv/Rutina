@@ -31,7 +31,7 @@ iPhone (Atajos) ──┐
 Panel web ────────┘
 ```
 - La API es la única que accede a la base de datos.
-- Los endpoints que modifican datos requieren una **clave API** en una cabecera.
+- Todos los endpoints de datos (`/tasks`...) requieren una **clave API** en la cabecera `X-API-Key`, también los de lectura (las tareas son personales). Solo `GET /` queda libre, para comprobar que la API está en marcha.
 - Los secretos (clave API, credenciales) van en un archivo `.env` que **nunca** se sube a git.
 
 ## Convenciones
@@ -51,6 +51,7 @@ Panel web ────────┘
 Desde la carpeta del proyecto, en PowerShell:
 - Activar el entorno virtual: `.\.venv\Scripts\Activate.ps1`
 - Instalar dependencias: `pip install -r requirements.txt`
+- Configurar secretos (solo la primera vez): copiar `.env.example` como `.env` y poner una clave propia en `API_KEY`
 - Actualizar `requirements.txt`: `pip freeze | Out-File -Encoding ascii requirements.txt` (no usar `>`: guarda en UTF-16)
 - Arrancar el servidor en desarrollo: `fastapi dev main.py` → http://localhost:8000/docs
 - Tests: _(pendiente)_
