@@ -1,0 +1,18 @@
+# Secretos: la clave API y credenciales nunca se suben
+.env
+
+# Entorno virtual de Python
+venv/
+.venv/
+
+# Base de datos local de desarrollo
+*.db
+*.sqlite3
+
+# Archivos generados por Python
+__pycache__/
+*.pyc
+
+# Configuración del editor
+.vscode/
+.idea/
