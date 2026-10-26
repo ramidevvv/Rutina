@@ -48,4 +48,9 @@ Panel web ────────┘
 5. Estadísticas semanales.
 
 ## Comandos
-_(Se completará cuando exista el proyecto: cómo instalar dependencias, arrancar el servidor y lanzar los tests.)_
+Desde la carpeta del proyecto, en PowerShell:
+- Activar el entorno virtual: `.\.venv\Scripts\Activate.ps1`
+- Instalar dependencias: `pip install -r requirements.txt`
+- Actualizar `requirements.txt`: `pip freeze | Out-File -Encoding ascii requirements.txt` (no usar `>`: guarda en UTF-16)
+- Arrancar el servidor en desarrollo: `fastapi dev main.py` → http://localhost:8000/docs
+- Tests: _(pendiente)_

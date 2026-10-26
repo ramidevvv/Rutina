@@ -23,6 +23,24 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Primer endpoint: "hola mundo" (Paso 2)
+
+**Qué:**
+- `main.py` con la instancia `app = FastAPI(title="Rutina")` y el endpoint `GET /`, que devuelve `{"message": "Hola desde Rutina"}`.
+- Probado con `fastapi dev main.py` en el navegador (`/` y `/docs`) y con `TestClient`.
+
+**Por qué:**
+- Antes de añadir lógica conviene comprobar que la base funciona: servidor, recarga automática y documentación en `/docs`.
+- `GET /` sirve de comprobación rápida de que la API está en marcha. Será útil cuando esté desplegada.
+- Funciones con `def` normal en vez de `async def`: es más fácil y suficiente para una app personal.
+
+**Alternativas descartadas:**
+- `async def`: solo aporta algo cuando hay esperas largas (red, archivos) y muchas peticiones a la vez.
+- Estructura con carpeta `app/` desde el principio: con un solo archivo no aporta nada. Se reorganizará cuando haya varios.
+
+**Pendiente / siguiente paso:**
+- Paso 3: modelo `Task` con Pydantic y endpoints `POST /tasks` y `GET /tasks`, guardando en memoria.
+
 ## 2026-10-26 — Entorno virtual e instalación de FastAPI (Paso 1)
 
 **Qué:**
