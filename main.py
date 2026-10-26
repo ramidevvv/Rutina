@@ -9,10 +9,11 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-# Carga las variables del archivo .env. Si falta API_KEY, la API no arranca:
-# mejor fallar al inicio que funcionar sin protección.
+# Carga las variables del archivo .env. Si falta alguna, la API no arranca:
+# mejor fallar al inicio que funcionar sin protección o con la base de datos equivocada.
 load_dotenv()
 API_KEY = os.environ["API_KEY"]
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 
 # Datos que envía el cliente al crear una tarea
@@ -28,15 +29,15 @@ class Task(TaskCreate, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-# Conexión a la base de datos (un archivo SQLite en la carpeta del proyecto).
-# echo=True muestra en la terminal el SQL que se ejecuta.
-# check_same_thread=False: FastAPI atiende peticiones en varios hilos y SQLite,
-# por defecto, solo deja usar una conexión desde el hilo que la creó.
-engine = create_engine(
-    "sqlite:///rutina.db",
-    echo=True,
-    connect_args={"check_same_thread": False},
-)
+# check_same_thread=False solo aplica a SQLite: FastAPI atiende peticiones en
+# varios hilos y SQLite, por defecto, solo deja usar una conexión desde el hilo
+# que la creó. Otras bases de datos (PostgreSQL) no aceptan esta opción.
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+# Conexión a la base de datos. echo=True muestra en la terminal el SQL que se ejecuta.
+engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
 
 
 # Abre una sesión por petición y la cierra al terminar, aunque haya un error

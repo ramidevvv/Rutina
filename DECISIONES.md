@@ -23,6 +23,40 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Fase 2: elegir dónde desplegar y preparar la base de datos
+
+**Qué:**
+- Se salta el Paso 6 de la Fase 1 (atajo probado en la WiFi de casa): el objetivo es crear tareas desde el iPhone en cualquier sitio, así que se pasa directamente a desplegar.
+- Despliegue elegido: **FastAPI Cloud** (plan Hobby) para la API y **Neon** (plan Free, región Frankfurt, con connection pooling) para PostgreSQL.
+- `DATABASE_URL` se lee de `.env` (obligatoria, como `API_KEY`). `check_same_thread` solo se aplica si la URL es de SQLite.
+- Instalado `psycopg[binary]` 3.3.6, el driver de PostgreSQL.
+- Conexión con Neon probada: la tabla `task` se crea sola y `POST`/`GET /tasks` funcionan sin cambiar el código. Las tareas de prueba se borraron.
+- En local se sigue usando SQLite. La URL de Neon queda comentada en `.env`.
+
+**Por qué:**
+- Desplegar en la nube frente a dejarlo en el PC con un túnel (Tailscale, Cloudflare Tunnel): la app se usa a diario y el PC no está siempre encendido.
+- FastAPI Cloud: gratis y sin tarjeta, hecho para FastAPI, y el comando `fastapi deploy` ya venía con `fastapi[standard]`. Render se descartó por su arranque en frío de alrededor de 1 minuto tras 15 minutos sin uso, que es un problema para un atajo de Siri.
+- Neon: PostgreSQL gratis, permanente y sin tarjeta. Se suspende sin uso, pero no borra datos.
+- SQLite no sirve en producción: el disco de estos servicios se borra en cada reinicio o despliegue.
+- `DATABASE_URL` obligatoria: si faltara en producción y se usara SQLite por defecto, se perderían datos sin darse cuenta.
+- SQLite en local: las pruebas no ensucian las tareas reales, funciona sin internet y se puede borrar `rutina.db` al cambiar el modelo.
+- `postgresql+psycopg://` en la URL: con SQLAlchemy 2.1 bastaría con `postgresql://` (ya usa psycopg por defecto, comprobado), pero así queda claro qué driver se usa.
+
+**Alternativas descartadas:**
+- Render (arranque en frío lento; su Postgres gratis caduca a los 30 días), Railway (solo crédito de prueba), Fly.io y Koyeb (piden tarjeta o pago).
+- Supabase: pausa el proyecto tras 1 semana sin uso.
+- Abrir un puerto en el router: expone el PC a internet y sin HTTPS.
+- Neon también en local: los experimentos afectarían a los datos reales.
+
+**A tener en cuenta:**
+- FastAPI Cloud está en beta pública: las condiciones pueden cambiar. El código no depende del servicio y se puede volver a desplegar en otro.
+- Las capas gratuitas cambian a menudo: revisar los límites de vez en cuando.
+
+**Pendiente / siguiente paso:**
+- Decidir `echo=True` en producción: escribiría el SQL (con los títulos de las tareas) en los registros.
+- Usar en producción una `API_KEY` distinta de la local.
+- Desplegar con `fastapi deploy`, configurar los secretos y crear el atajo del iPhone.
+
 ## 2026-10-26 — Clave API en todos los endpoints de /tasks (Paso 5)
 
 **Qué:**

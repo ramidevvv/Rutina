@@ -19,7 +19,8 @@ Uso personal: la usaré cada día, así que prima que funcione y sea simple ante
 
 ## Stack
 - **Backend:** Python + FastAPI
-- **Base de datos:** SQLite en desarrollo (PostgreSQL al desplegar)
+- **Base de datos:** SQLite en desarrollo, PostgreSQL en **Neon** en producción (se elige con `DATABASE_URL` en `.env`)
+- **Despliegue:** **FastAPI Cloud** (`fastapi deploy`)
 - **Frontend:** HTML, CSS y JavaScript sin frameworks (por ahora)
 - **Clientes:** panel web + Atajos de iPhone (acción "Obtener contenido de URL")
 - **Control de versiones:** git
@@ -41,8 +42,8 @@ Panel web ────────┘
 - Cada cambio o decisión relevante se apunta en `DECISIONES.md` (con fecha, qué, por qué y alternativas).
 
 ## Fases
-1. **[ACTUAL]** API mínima: modelo de tarea + crear y listar tareas. Primer atajo "añadir tarea", probado en local.
-2. Desplegar la API para usarla desde fuera de casa.
+1. **[HECHA]** API mínima: modelo de tarea + crear y listar tareas, con SQLite y clave API. (La prueba del atajo en la red local se saltó: el atajo se crea directamente contra la API desplegada.)
+2. **[ACTUAL]** Desplegar la API para usarla desde fuera de casa + primer atajo "añadir tarea".
 3. Panel web.
 4. Más automatizaciones: resumen matinal, revisión nocturna, registro de tiempo.
 5. Estadísticas semanales.
