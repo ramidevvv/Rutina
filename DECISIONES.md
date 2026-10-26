@@ -23,17 +23,39 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Entorno virtual e instalación de FastAPI (Paso 1)
+
+**Qué:**
+- Entorno virtual en `.venv` con Python 3.14.2.
+- Instalado `fastapi[standard]` (FastAPI 0.162.0, uvicorn 0.54.0, pydantic 2.14.1).
+- `requirements.txt` generado con `pip freeze`, con versiones exactas y codificado en ASCII.
+
+**Por qué:**
+- El entorno virtual aísla las librerías de este proyecto de las de otros y del Python del sistema.
+- `[standard]` incluye uvicorn y el comando `fastapi dev`, que reinicia el servidor al guardar cambios.
+- `pip freeze` fija las versiones exactas, para que al desplegar se instale lo mismo que en local.
+- En PowerShell 5.1, `>` guarda en UTF-16, que GitHub y Linux leen mal. Por eso se genera con `pip freeze | Out-File -Encoding ascii requirements.txt`. `-Encoding utf8` también se descartó porque añade una BOM.
+
+**Alternativas descartadas:**
+- `pip install fastapi uvicorn`: más ligero, pero sin `fastapi dev`.
+- Llamar al entorno `venv` sin punto: funciona igual, pero `.venv` es lo más habitual y VS Code lo detecta solo.
+
+**Pendiente / siguiente paso:**
+- Paso 2: `main.py` con un endpoint `GET /` y probar la documentación automática en `/docs`.
+
 ## 2026-10-26 — Repositorio git propio y cuenta personal
 
 **Qué:**
 - `git init` dentro de `ClaudeCode` (rama `main`).
 - Identidad local del repositorio: `ramidevvv <ramidevvv@gmail.com>`.
 - `.gitignore` que excluye `.env`, el entorno virtual, la base de datos local, `__pycache__/` y la configuración del editor.
+- Remoto `origin` en GitHub: `https://github.com/ramidevvv/Rutina.git`, creado vacío desde la web.
 
 **Por qué:**
 - `ClaudeCode` no tenía `.git` propio, así que git subía de carpeta en carpeta hasta usar el repositorio de `C:\Users\Rami`, que veía todo el perfil de usuario (incluido `.ssh/`). Con un `.git` propio, git usa siempre el más cercano.
 - Este es un proyecto de autoaprendizaje y va con la cuenta personal, no con la del instituto. La configuración local de un repositorio tiene prioridad sobre la global, así que la global (del instituto) se queda intacta para lo demás.
 - El `.gitignore` se crea antes del primer commit para que nunca llegue a git un secreto ni archivos generados.
+- El remoto sirve de copia de seguridad. Se creó sin README ni `.gitignore` para que su historial no chocara con el local en el primer `push`.
 
 **Alternativas descartadas:**
 - Borrar el `.git` de `C:\Users\Rami`: tiene remoto, configuración y objetos guardados, y no hace falta tocarlo para arreglar esto.
