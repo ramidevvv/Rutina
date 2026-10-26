@@ -23,6 +23,36 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Guardar las tareas en SQLite con SQLModel (Paso 4)
+
+**Qué:**
+- Instalado `sqlmodel` 0.0.48 (con SQLAlchemy 2.1.6).
+- `TaskCreate` pasa a heredar de `SQLModel`, y `Task` es además la tabla (`table=True`). La base de datos asigna `id` (`primary_key=True`), y `done` y `created_at` tienen valores por defecto.
+- Engine con `sqlite:///rutina.db`, `echo=True` para ver el SQL en la terminal y `check_same_thread=False`.
+- Las tablas se crean al arrancar (`lifespan` + `SQLModel.metadata.create_all`).
+- Una sesión por petición mediante la dependencia `get_session` (`SessionDep`).
+- Desaparecen la lista `tasks` y el contador `next_id`.
+
+**Por qué:**
+- Con un ORM, el código no depende de la base de datos: pasar a otra (PostgreSQL, MySQL) será cambiar la URL de conexión.
+- SQLModel es del autor de FastAPI y se basa en Pydantic, así que los modelos del Paso 3 casi no cambian.
+- SQLite en desarrollo: un archivo, sin servidor ni contraseñas. La base de datos de producción se decide en la Fase 2.
+- `echo=True` para aprender qué SQL genera el ORM.
+- `check_same_thread=False`: FastAPI atiende peticiones en varios hilos y SQLite, por defecto, no lo permite.
+- La dependencia (`Depends`) abre y cierra la sesión en un solo sitio, aunque haya errores. La misma idea servirá para la clave API.
+
+**Alternativas descartadas:**
+- `sqlite3` con SQL a mano: se aprende más SQL, pero hay que convertir las filas a mano y cambiar más código al pasar a otra base de datos.
+- MySQL en local (ya instalado): requiere servidor en marcha, usuario y contraseña. No aporta nada en esta fase.
+- Tercer modelo `TaskPublic` para las respuestas (lo recomienda la documentación de SQLModel): solo mejora cómo sale el `id` en `/docs`. Se añadirá si hace falta.
+
+**A tener en cuenta:**
+- `create_all` solo crea tablas que no existen. Si se cambia un campo de `Task`, en desarrollo hay que borrar `rutina.db`. En producción harán falta migraciones (Alembic).
+- SQLite no guarda la zona horaria: por convención, todas las fechas de la base de datos están en UTC.
+
+**Pendiente / siguiente paso:**
+- Paso 5: exigir una clave API (cabecera `X-API-Key`, leída de `.env`) en los endpoints que modifican datos.
+
 ## 2026-10-26 — Modelo de tarea y endpoints en memoria (Paso 3)
 
 **Qué:**
