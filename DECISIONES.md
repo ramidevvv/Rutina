@@ -23,6 +23,27 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-27 — Modificar y borrar tareas (PATCH y DELETE)
+
+**Qué:**
+- Modelo `TaskUpdate`: `title`, `description` y `done`, todos opcionales.
+- `PATCH /tasks/{task_id}`: cambia solo los campos enviados (`exclude_unset=True`). Por ejemplo, `{"done": true}` marca la tarea como hecha.
+- `DELETE /tasks/{task_id}`: borra la tarea y responde `204`.
+- Si la tarea no existe, los dos responden `404`. Piden la clave por estar en `tasks_router`.
+
+**Por qué:**
+- Sin poder marcar ni borrar tareas, la app no sirve para el día a día, y el panel web y los atajos lo necesitan.
+- PATCH y no PUT: PUT obliga a enviar la tarea entera. Con PATCH basta con `{"done": true}`, más cómodo desde un atajo.
+- La tabla no cambia, así que no hay que tocar Neon.
+
+**Alternativas descartadas:**
+- Una primera versión incluía `GET /tasks/{id}`, quitar espacios del título y rechazar `null`. Se quitó: usaba conceptos nuevos (`BeforeValidator`, `field_validator`) que hacían el código difícil de seguir. Decidí ir a lo mínimo y dejar las comprobaciones para más adelante.
+
+**Pendiente:**
+- `GET /tasks/{id}` para ver una sola tarea.
+- Rechazar títulos de solo espacios (`"   "`).
+- `PATCH` con `{"title": null}` o `{"done": null}` da `500`: rechazarlo con un `422`.
+
 ## 2026-10-26 — Atajo del iPhone y arreglo de conexiones caducadas (pool_pre_ping)
 
 **Qué:**

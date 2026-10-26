@@ -25,6 +25,14 @@ class TaskCreate(SQLModel):
     description: str | None = None
 
 
+# Datos que envía el cliente al modificar una tarea: todos opcionales,
+# solo se cambian los campos que vengan en la petición
+class TaskUpdate(SQLModel):
+    title: str | None = None
+    description: str | None = None
+    done: bool | None = None
+
+
 # Tarea completa: es a la vez la tabla de la base de datos y lo que devuelve la API
 class Task(TaskCreate, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -109,6 +117,30 @@ def create_task(task_in: TaskCreate, session: SessionDep) -> Task:
 @tasks_router.get("")
 def list_tasks(session: SessionDep) -> list[Task]:
     return session.exec(select(Task)).all()
+
+
+# Modifica una tarea, por ejemplo para marcarla como hecha con {"done": true}
+@tasks_router.patch("/{task_id}")
+def update_task(task_id: int, task_in: TaskUpdate, session: SessionDep) -> Task:
+    task = session.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    # exclude_unset=True: solo los campos que vienen en la petición
+    task.sqlmodel_update(task_in.model_dump(exclude_unset=True))
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+
+# Borra una tarea
+@tasks_router.delete("/{task_id}", status_code=204)
+def delete_task(task_id: int, session: SessionDep):
+    task = session.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    session.delete(task)
+    session.commit()
 
 
 app.include_router(tasks_router)
