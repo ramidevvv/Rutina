@@ -40,7 +40,14 @@ if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 # Conexión a la base de datos. Con echo activado se muestra en la terminal el SQL que se ejecuta.
-engine = create_engine(DATABASE_URL, echo=SQL_ECHO, connect_args=connect_args)
+# pool_pre_ping comprueba cada conexión guardada antes de usarla y la renueva si
+# está cerrada (Neon cierra las conexiones cuando se suspende tras 5 min sin uso).
+engine = create_engine(
+    DATABASE_URL,
+    echo=SQL_ECHO,
+    connect_args=connect_args,
+    pool_pre_ping=True,
+)
 
 
 # Abre una sesión por petición y la cierra al terminar, aunque haya un error

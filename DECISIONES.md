@@ -23,6 +23,30 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Atajo del iPhone y arreglo de conexiones caducadas (pool_pre_ping)
+
+**Qué:**
+- Atajo "Añadir tarea" en el iPhone: *Solicitar entrada* → *Obtener contenido de URL* (`POST https://rutina.fastapicloud.dev/tasks`, cabecera `X-API-Key`, cuerpo JSON `title` = Entrada proporcionada) → *Mostrar resultado*. Funciona con Siri y con datos móviles.
+- `pool_pre_ping=True` en `create_engine`.
+
+**Por qué:**
+- En los registros de producción, la primera tarea tras un rato sin uso dio `500` con `psycopg.OperationalError: SSL connection has been closed unexpectedly`, y esa tarea no se guardó.
+- Causa: SQLAlchemy reutiliza las conexiones abiertas (*pool*), pero Neon las cierra al suspenderse tras 5 minutos sin uso. La siguiente petición intentaba usar una conexión ya cerrada.
+- `pool_pre_ping` comprueba la conexión con una consulta mínima antes de usarla y, si está cerrada, abre otra. Cuesta unos milisegundos por petición.
+
+**Alternativas descartadas:**
+- `pool_recycle` (renovar las conexiones cada X segundos): reduce el problema, pero no lo elimina si Neon cierra antes de ese tiempo.
+- Reintentar la petición en el atajo: esconde el error en lugar de arreglarlo, y habría que hacerlo en cada cliente.
+
+**Cómo comprobar que llegan las tareas:**
+- El atajo muestra un JSON con `id` (tarea guardada) o un error.
+- `/docs` de producción con Authorize y la clave de producción → `GET /tasks`.
+- Neon: *Tables* o *SQL Editor* (`SELECT * FROM task;`).
+- `fastapi cloud logs`: cada petición con su código (`201` = guardada).
+
+**Pendiente / siguiente paso:**
+- Comprobar en los registros que no vuelve a salir el `500` tras un rato sin uso.
+
 ## 2026-10-26 — API desplegada en FastAPI Cloud
 
 **Qué:**
