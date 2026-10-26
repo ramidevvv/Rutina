@@ -23,6 +23,31 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — Modelo de tarea y endpoints en memoria (Paso 3)
+
+**Qué:**
+- Modelos Pydantic: `TaskCreate` (`title`, `description`), con lo que envía el cliente, y `Task`, que hereda de `TaskCreate` y añade `id`, `done` y `created_at`, con lo que devuelve la API.
+- `title` obligatorio, de 1 a 200 caracteres. `description` opcional (`str | None`).
+- `POST /tasks` crea una tarea y responde con `201 Created`. `GET /tasks` lista todas.
+- Almacenamiento en una lista de Python, con un contador `next_id` para los ids.
+- Probado en `/docs`, con `Invoke-RestMethod` y con `TestClient`, incluidos los casos de error (`422`).
+
+**Por qué:**
+- Dos modelos para que el cliente no pueda fijar `id`, `done` ni `created_at`: si los envía, se ignoran (comprobado).
+- `description` se añade a petición mía, para apuntar notas extra. Es opcional para poder crear tareas solo con el título desde Siri.
+- `min_length=1` rechaza títulos vacíos, por ejemplo si Siri no entiende bien.
+- `created_at` en UTC: al desplegar, el servidor estará en otra zona horaria. El panel convertirá la hora a la local al mostrarla.
+- Contador en vez de `len(tasks) + 1`: cuando se puedan borrar tareas, el tamaño de la lista bajará y se repetirían ids.
+- Memoria antes que base de datos: así se entiende la API sin mezclar dos conceptos nuevos a la vez.
+
+**Alternativas descartadas:**
+- Un único modelo con `id` y `created_at` opcionales: más corto, pero mezcla lo que entra con lo que sale.
+- Hora local en `created_at`: depende de dónde esté el servidor.
+
+**Pendiente / siguiente paso:**
+- Mejora apuntada: un título de solo espacios (`"   "`) se acepta. Quitar los espacios antes de validar.
+- Paso 4: guardar las tareas en SQLite para que no se pierdan al reiniciar.
+
 ## 2026-10-26 — Primer endpoint: "hola mundo" (Paso 2)
 
 **Qué:**
