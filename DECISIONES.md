@@ -23,6 +23,31 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-26 — API desplegada en FastAPI Cloud
+
+**Qué:**
+- App `rutina` desplegada con `fastapi deploy` en el team `ramidevvv`. URL: https://rutina.fastapicloud.dev
+- `fastapi deploy` crea la carpeta `.fastapicloud/`, que vincula el proyecto a la app y no se sube a git. En los siguientes despliegues ya no hace preguntas.
+- Variables de entorno en el panel, ambas como **Secret**: `API_KEY` (clave de producción, distinta de la local) y `DATABASE_URL` (Neon, con `postgresql+psycopg://`). `SQL_ECHO` no se define.
+- Comprobado: `GET /` → `200`, `/tasks` sin clave → `401`, con clave → `200` (conecta con Neon), la clave local → `401`, y `http://` redirige a `https://`.
+
+**Por qué:**
+- La clave de producción es distinta de la local porque la local había aparecido en la conversación. Así, aunque se filtre la local, no da acceso a los datos reales.
+- Secret: su valor queda cifrado y no se puede ver ni en el panel ni con `fastapi cloud env list`. Solo se puede elegir al crear la variable; para cambiarlo, hay que borrarla y crearla de nuevo.
+
+**Problemas encontrados y cómo se resolvieron:**
+- Primer despliegue: **Verification Failed** con `KeyError: 'API_KEY'`. Era lo esperado: aún no había variables y la API no arranca sin ellas.
+- Tras añadir las variables seguía fallando: se habían guardado sin redesplegar. Con **Save Only** se aplican en el siguiente despliegue; se solucionó con `fastapi deploy`.
+- La URL del panel (`dashboard.fastapicloud.com/...`) no es la de la API (`rutina.fastapicloud.dev`).
+- Un `404` sin cuerpo viene de la plataforma (Cloudflare), no de la API (que respondería `{"detail":"Not Found"}`): la petición no llega a la app.
+- Lección: lo que se selecciona en VS Code llega a Claude Code. Para copiar secretos sin mostrarlos se usa `Set-Clipboard`, o se copian directamente de la web del servicio.
+
+**A tener en cuenta:**
+- La contraseña de Neon apareció en la conversación. Decidí no cambiarla. Si en algún momento se quiere cambiar: en Neon, *Reset password* del rol `neondb_owner`, y actualizar el secreto `DATABASE_URL` en FastAPI Cloud con *Save and Redeploy*.
+
+**Pendiente / siguiente paso:**
+- Crear el atajo "Añadir tarea" en el iPhone contra `https://rutina.fastapicloud.dev/tasks`.
+
 ## 2026-10-26 — Mostrar el SQL solo en local (SQL_ECHO)
 
 **Qué:**

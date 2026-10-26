@@ -55,4 +55,7 @@ Desde la carpeta del proyecto, en PowerShell:
 - Configurar secretos (solo la primera vez): copiar `.env.example` como `.env` y poner una clave propia en `API_KEY`
 - Actualizar `requirements.txt`: `pip freeze | Out-File -Encoding ascii requirements.txt` (no usar `>`: guarda en UTF-16)
 - Arrancar el servidor en desarrollo: `fastapi dev main.py` → http://localhost:8000/docs
+- Desplegar en FastAPI Cloud: `fastapi deploy` → https://rutina.fastapicloud.dev (los secretos `API_KEY` y `DATABASE_URL` se configuran en el panel, en Environment Variables, como Secret)
+- Ver los registros de producción: `fastapi cloud logs --no-follow --since 1h`
+- Ver las variables de producción: `fastapi cloud env list`
 - Tests: _(pendiente)_
