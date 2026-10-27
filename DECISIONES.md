@@ -23,6 +23,19 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-27 — Atajo "Ver tareas" en el iPhone
+
+**Qué:**
+- Duplicado de "Añadir tarea", sin *Solicitar entrada*, con método `GET` y sin cuerpo. Mantiene la cabecera `X-API-Key`.
+- Muestra solo los títulos: *Repetir con cada* elemento de *Contenido de la URL* → *Obtener valor de diccionario* `title` de *Elemento de repetición* → *Mostrar* *Resultados de repetir*.
+
+**Por qué:**
+- Duplicar el atajo evita volver a escribir la clave.
+- *Obtener valor de diccionario* aplicado directamente a la respuesta no funcionó: Atajos no la recorría como lista. El bucle *Repetir con cada* procesa las tareas una a una y es la forma fiable.
+
+**Pendiente:**
+- Mostrar solo las tareas pendientes (`done: false`) y marcarlas como hechas desde el iPhone.
+
 ## 2026-10-27 — Modificar y borrar tareas (PATCH y DELETE)
 
 **Qué:**
