@@ -23,6 +23,20 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-27 — Panel web, paso 2: añadir tareas
+
+**Qué:**
+- Formulario con un campo de título (`required`) y un botón **Añadir**.
+- Al enviarlo: `preventDefault()`, `POST /tasks` con la clave y `{"title": ...}`, vaciar el campo y recargar la lista.
+
+**Por qué:**
+- `required` evita enviar títulos vacíos sin escribir JavaScript.
+- `preventDefault()`: sin él, el navegador recarga la página al enviar el formulario.
+- Solo título, por ser lo mínimo. La descripción se añadirá si hace falta.
+
+**Pendiente / siguiente paso:**
+- Panel: marcar tareas como hechas y borrarlas.
+
 ## 2026-10-27 — Fase 3: panel web, paso 1 (ver la lista)
 
 **Qué:**

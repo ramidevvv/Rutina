@@ -12,6 +12,12 @@
 </head>
 <body>
   <h1>Mis tareas</h1>
+
+  <form id="task-form">
+    <input id="task-title" placeholder="Nueva tarea" required>
+    <button type="submit">Añadir</button>
+  </form>
+
   <ul id="task-list"></ul>
 
   <script>
@@ -46,6 +52,21 @@
         list.appendChild(item);
       }
     }
+
+    // Al enviar el formulario: crea la tarea en la API y recarga la lista
+    document.getElementById("task-form").addEventListener("submit", async (event) => {
+      event.preventDefault(); // evita que el navegador recargue la página
+      const input = document.getElementById("task-title");
+
+      await fetch("/tasks", {
+        method: "POST",
+        headers: { "X-API-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ title: input.value }),
+      });
+
+      input.value = "";
+      loadTasks();
+    });
 
     loadTasks();
   </script>
