@@ -41,6 +41,8 @@ class Task(TaskCreate, table=True):
     id: int | None = Field(default=None, primary_key=True)
     done: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # Cuándo se marcó como hecha (vacío si está pendiente). Para las estadísticas
+    completed_at: datetime | None = None
 
 
 # check_same_thread=False solo aplica a SQLite: FastAPI atiende peticiones en
@@ -137,6 +139,11 @@ def update_task(task_id: int, task_in: TaskUpdate, session: SessionDep) -> Task:
         raise HTTPException(status_code=404, detail="Tarea no encontrada")
     # exclude_unset=True: solo los campos que vienen en la petición
     task.sqlmodel_update(task_in.model_dump(exclude_unset=True))
+    # Guarda cuándo se completó; si se desmarca, se vacía
+    if task_in.done is True:
+        task.completed_at = datetime.now(timezone.utc)
+    elif task_in.done is False:
+        task.completed_at = None
     session.add(task)
     session.commit()
     session.refresh(task)
@@ -149,6 +156,10 @@ def delete_task(task_id: int, session: SessionDep):
     task = session.get(Task, task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    # Las hechas son el historial para las estadísticas: no se borran.
+    # 409 Conflict: la petición choca con el estado de la tarea
+    if task.done:
+        raise HTTPException(status_code=409, detail="Las tareas hechas no se pueden borrar")
     session.delete(task)
     session.commit()
 

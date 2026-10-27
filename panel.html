@@ -7,6 +7,7 @@
   <style>
     body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
     li { padding: 0.4rem 0; }
+    li button { margin-left: 0.5rem; }
     .done { text-decoration: line-through; color: gray; }
   </style>
 </head>
@@ -40,17 +41,58 @@
       }
 
       const tasks = await response.json();
+      // Primero las pendientes y después las hechas (false va antes que true)
+      tasks.sort((a, b) => a.done - b.done);
+
       const list = document.getElementById("task-list");
       list.innerHTML = "";
 
       for (const task of tasks) {
         const item = document.createElement("li");
-        item.textContent = task.title;
+
+        // Casilla para marcar o desmarcar la tarea como hecha
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.addEventListener("change", () => updateTask(task.id, checkbox.checked));
+        item.appendChild(checkbox);
+
+        const title = document.createElement("span");
+        title.textContent = " " + task.title;
         if (task.done) {
-          item.className = "done";
+          title.className = "done";
         }
+        item.appendChild(title);
+
+        // Botón de borrar solo en las pendientes: las hechas se guardan para estadísticas
+        if (!task.done) {
+          const button = document.createElement("button");
+          button.textContent = "Borrar";
+          button.addEventListener("click", () => deleteTask(task.id));
+          item.appendChild(button);
+        }
+
         list.appendChild(item);
       }
+    }
+
+    // Marca o desmarca una tarea como hecha y recarga la lista
+    async function updateTask(id, done) {
+      await fetch("/tasks/" + id, {
+        method: "PATCH",
+        headers: { "X-API-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ done: done }),
+      });
+      loadTasks();
+    }
+
+    // Borra una tarea pendiente y recarga la lista
+    async function deleteTask(id) {
+      await fetch("/tasks/" + id, {
+        method: "DELETE",
+        headers: { "X-API-Key": apiKey },
+      });
+      loadTasks();
     }
 
     // Al enviar el formulario: crea la tarea en la API y recarga la lista

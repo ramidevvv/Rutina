@@ -35,6 +35,11 @@ Panel web ────────┘
 - Todos los endpoints de datos (`/tasks`...) requieren una **clave API** en la cabecera `X-API-Key`, también los de lectura (las tareas son personales). Solo `GET /` queda libre, para comprobar que la API está en marcha.
 - Los secretos (clave API, credenciales) van en un archivo `.env` que **nunca** se sube a git.
 
+## Reglas de las tareas
+- Las tareas **hechas no se borran nunca**: son el historial para las estadísticas (Fase 5). Solo se pueden borrar las **pendientes** (para corregir errores, p. ej. Siri entendió mal). La API lo impide, no solo el panel.
+- Al marcar una tarea como hecha se guarda **cuándo** (`completed_at`, en UTC). Si se desmarca, se vacía.
+- En el panel: primero las pendientes y debajo las hechas, tachadas.
+
 ## Convenciones
 - Código y nombres en inglés; comentarios y documentación en español.
 - Endpoints REST en plural: `/tasks`, `/tasks/{id}`, `/tasks/today`.

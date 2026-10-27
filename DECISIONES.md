@@ -23,6 +23,30 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-27 — Las tareas hechas se guardan para estadísticas (panel, paso 3)
+
+**Qué:**
+- Reglas nuevas en `claude.md` (sección "Reglas de las tareas").
+- Campo `completed_at` en `Task`: `PATCH` con `done: true` guarda la hora (UTC) y con `done: false` la vacía.
+- `DELETE` de una tarea hecha responde `409 Conflict`. Solo se borran las pendientes.
+- Panel: casilla para marcar o desmarcar (`PATCH`), botón **Borrar** solo en las pendientes (`DELETE`) y orden con las pendientes primero (`tasks.sort`).
+- Columna añadida a mano con `ALTER TABLE task ADD COLUMN completed_at ...`: en Neon (SQL Editor, `TIMESTAMP`) y en el `rutina.db` local (`DATETIME`), sin perder datos.
+
+**Por qué:**
+- Las tareas hechas son el historial para las estadísticas (Fase 5). Borrar solo sirve para corregir errores, como cuando Siri entiende mal.
+- La regla está en la API, no solo en el panel: así se cumple desde cualquier cliente (atajos, panel...).
+- `completed_at` permite saber cuántas tareas se completan por día o semana. Las que ya estaban hechas se quedan sin fecha.
+- `create_all` no modifica tablas existentes: primero se añade la columna en Neon y después se despliega. En el orden contrario, la API fallaría.
+
+**Alternativas descartadas:**
+- Prohibir borrar del todo: no habría forma de quitar tareas creadas por error.
+- Ocultar las hechas en el panel: preferí verlas tachadas debajo.
+- Migraciones con Alembic: para una sola columna, un `ALTER TABLE` a mano es más sencillo. Se reconsiderará si los cambios de tablas se vuelven frecuentes.
+
+**A tener en cuenta:**
+- Con `load_dotenv(override=True)`, una variable puesta al lanzar un comando (`SQL_ECHO=0 python ...`) también la sobrescribe `.env`.
+- Cada dirección del panel tiene su clave: `localhost` → la local, `rutina.fastapicloud.dev` → la de producción. Si el navegador guarda una incorrecta: `localStorage.removeItem("apiKey")` en la consola (F12).
+
 ## 2026-10-27 — Panel web, paso 2: añadir tareas
 
 **Qué:**
