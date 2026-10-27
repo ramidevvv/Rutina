@@ -23,6 +23,21 @@ La idea es que dentro de unos meses pueda leer esto y entender cada decisión si
 
 ---
 
+## 2026-10-27 — Fase 3: panel web, paso 1 (ver la lista)
+
+**Qué:**
+- `panel.html`: una sola página con HTML, CSS y JavaScript sin frameworks. Pide la clave con `prompt`, la guarda en `localStorage` y muestra las tareas con `fetch("/tasks")`. Las hechas salen tachadas.
+- `GET /panel` en `main.py` devuelve la página con `FileResponse`. No pide clave: la página no contiene datos y las tareas las pide luego ella misma con la clave.
+- `load_dotenv(override=True)`.
+
+**Por qué:**
+- Servir el panel desde la propia API: no hace falta otro alojamiento y, al estar en la misma dirección, el navegador no bloquea las peticiones (CORS).
+- `localStorage`: no pedir la clave cada vez. Si la API responde `401`, se borra y se vuelve a pedir.
+- `override=True`: tras cambiar la clave local en `.env`, el servidor seguía con la antigua incluso al reiniciarlo. La terminal ya tenía cargada `API_KEY` (probablemente VS Code la carga al abrir la terminal) y `load_dotenv()` no sobrescribe las variables que ya existen. Con `override=True`, `.env` siempre manda. En producción no afecta, porque no hay `.env`.
+
+**Pendiente / siguiente paso:**
+- Panel: añadir tareas, marcarlas como hechas y borrarlas.
+
 ## 2026-10-27 — Atajo "Ver tareas" en el iPhone
 
 **Qué:**

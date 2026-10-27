@@ -6,12 +6,15 @@ from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
+from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 # Carga las variables del archivo .env. Si falta alguna, la API no arranca:
 # mejor fallar al inicio que funcionar sin protección o con la base de datos equivocada.
-load_dotenv()
+# override=True: los valores de .env mandan sobre variables que ya existan en la
+# terminal (por ejemplo, una clave antigua que se quedó cargada)
+load_dotenv(override=True)
 API_KEY = os.environ["API_KEY"]
 DATABASE_URL = os.environ["DATABASE_URL"]
 # Opcional: si no está definida, no se muestra el SQL (así los títulos de las
@@ -93,6 +96,13 @@ app = FastAPI(title="Rutina", lifespan=lifespan)
 @app.get("/")
 def read_root():
     return {"message": "Hola desde Rutina"}
+
+
+# Panel web: devuelve la página HTML. No pide la clave porque la página no
+# contiene datos; es la propia página la que luego pide las tareas con la clave
+@app.get("/panel")
+def panel():
+    return FileResponse("panel.html")
 
 
 # Todos los endpoints de /tasks exigen la clave API

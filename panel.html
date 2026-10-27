@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rutina</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    li { padding: 0.4rem 0; }
+    .done { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>Mis tareas</h1>
+  <ul id="task-list"></ul>
+
+  <script>
+    // La clave se pide una sola vez y se guarda en el navegador (localStorage)
+    let apiKey = localStorage.getItem("apiKey");
+    if (!apiKey) {
+      apiKey = prompt("Introduce tu clave API");
+      localStorage.setItem("apiKey", apiKey);
+    }
+
+    // Pide las tareas a la API y las muestra en la lista
+    async function loadTasks() {
+      const response = await fetch("/tasks", { headers: { "X-API-Key": apiKey } });
+
+      if (response.status === 401) {
+        // Clave incorrecta: se borra para que la vuelva a pedir al recargar
+        localStorage.removeItem("apiKey");
+        alert("Clave API no válida. Recarga la página para volver a intentarlo.");
+        return;
+      }
+
+      const tasks = await response.json();
+      const list = document.getElementById("task-list");
+      list.innerHTML = "";
+
+      for (const task of tasks) {
+        const item = document.createElement("li");
+        item.textContent = task.title;
+        if (task.done) {
+          item.className = "done";
+        }
+        list.appendChild(item);
+      }
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
